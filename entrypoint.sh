@@ -24,39 +24,50 @@ cat ${ABC_HOME}/.config/scdl/scdl.cfg
 
 /etc/my_init.d/10-changeuser.sh
 
-echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
-echo "# # Downloading playlists                        # #"
-echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
-if [ ! -d ${SCDL_DOWNLOAD_PATH}playlists ]; then
-	mkdir -p ${SCDL_DOWNLOAD_PATH}playlists
-	chown abc:abc ${SCDL_DOWNLOAD_PATH}playlists -R
-fi
-/bin/setuser abc /usr/bin/scdl me -p -c --debug --addtofile --path ${SCDL_DOWNLOAD_PATH}playlists
-echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
-echo "#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#_#-#-#-#-#-#-"
-echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
 
-echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
-echo "# # Downloading favorites                        # #"
-echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
-if [ ! -d ${SCDL_DOWNLOAD_PATH}favorites ]; then
-        mkdir -p ${SCDL_DOWNLOAD_PATH}favorites
-	chown abc:abc ${SCDL_DOWNLOAD_PATH}favorites
-fi
-/bin/setuser abc /usr/bin/scdl me -f -c --debug --addtofile --path ${SCDL_DOWNLOAD_PATH}favorites
-echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
-echo "#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#_#-#-#-#-#-#-"
-echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
+if [ ! -f /tmp/scdl.lock ]; then
+	if touch ${SCDL_DOWNLOAD_PATH}scdl.lock; then
+		curl -s "http://api.soundcloud.com/me/playlists?oauth_token=${SCDL_AUTH_TOKEN}" | jq '.[].title' | sed -r 's/\"//g' | xargs -I LIST ln -s ${SCDL_DOWNLOAD_PATH}playlists/LIST ${SCDL_DOWNLOAD_PATH}stream/LIST
 
-echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
-echo "# # Downloading stream                        # #"
-echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
-if [ ! -d ${SCDL_DOWNLOAD_PATH}stream ]; then
-        mkdir -p ${SCDL_DOWNLOAD_PATH}stream
-	chown abc:abc ${SCDL_DOWNLOAD_PATH}stream
+		echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
+		echo "# # Downloading playlists                        # #"
+		echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
+		if [ ! -d ${SCDL_DOWNLOAD_PATH}playlists ]; then
+			mkdir -p ${SCDL_DOWNLOAD_PATH}playlists
+			chown abc:abc ${SCDL_DOWNLOAD_PATH}playlists -R
+		fi
+		/bin/setuser abc /usr/bin/scdl me -p -c --debug --addtofile --path ${SCDL_DOWNLOAD_PATH}playlists
+		echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
+		echo "#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#_#-#-#-#-#-#-"
+		echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
+		
+		echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
+		echo "# # Downloading favorites                        # #"
+		echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
+		if [ ! -d ${SCDL_DOWNLOAD_PATH}favorites ]; then
+		        mkdir -p ${SCDL_DOWNLOAD_PATH}favorites
+			chown abc:abc ${SCDL_DOWNLOAD_PATH}favorites
+		fi
+		/bin/setuser abc /usr/bin/scdl me -f -c --debug --addtofile --path ${SCDL_DOWNLOAD_PATH}favorites
+		echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
+		echo "#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#_#-#-#-#-#-#-"
+		echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
+		
+		echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
+		echo "# # Downloading stream                        # #"
+		echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
+		if [ ! -d ${SCDL_DOWNLOAD_PATH}stream ]; then
+		        mkdir -p ${SCDL_DOWNLOAD_PATH}stream
+			chown abc:abc ${SCDL_DOWNLOAD_PATH}stream
+		fi
+		/bin/setuser abc /usr/bin/scdl me -a -c --debug --addtofile --path ${SCDL_DOWNLOAD_PATH}stream
+		rm -rf $(find ${SCDL_DOWNLOAD_PATH}stream/ -name "*" -type d | egrep -v '/$')
+		echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
+		echo "#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#_#-#-#-#-#-#-"
+		echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
+		
+		curl -s "http://api.soundcloud.com/me/playlists?oauth_token=${SCDL_AUTH_TOKEN}" | jq '.[].title' | sed -r 's/\"//g' | xargs -I LIST rm ${SCDL_DOWNLOAD_PATH}stream/LIST
+
+		rm -rf ${SCDL_DOWNLOAD_PATH}scdl.lock
+	fi
 fi
-/bin/setuser abc /usr/bin/scdl me -a -c --debug --addtofile --path ${SCDL_DOWNLOAD_PATH}stream
-rm -rf $(find ${SCDL_DOWNLOAD_PATH}stream/ -name "*" -type d | egrep -v '/$')
-echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "
-echo "#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#_#-#-#-#-#-#-"
-echo "- - - - - - - - - - - - - - - - - - - - - - - - - - "

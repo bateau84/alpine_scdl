@@ -104,6 +104,9 @@ if [ ! -f ${SCDL_DOWNLOAD_PATH}scdl.lock ]; then
 
 		/bin/setuser abc /usr/bin/scdl --version
 
+		chown abc:abc ${SCDL_DOWNLOAD_PATH} -R
+		chmod ug+rwx,o-x ${SCDL_DOWNLOAD_PATH} -R
+
 		rm -rf ${SCDL_DOWNLOAD_PATH}scdl.lock
 	fi
 fi
